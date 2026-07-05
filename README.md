@@ -11,13 +11,7 @@ run it:
 
 ChromeFullscreen.app/Contents/MacOS/ChromeFullscreen [<args>]
 
-or
-
-open ChromeFullscreen.app
-
-or
-
-using Spotlight.
+Ideally run the app directly, and ensure that it appears in the Settings > Privacy & Security > Accessibility list and is allowed to control the computer. (this doesn't have an UX, so it will silently do its thing, to debug run the CLI version)
 
 Script args:
 
