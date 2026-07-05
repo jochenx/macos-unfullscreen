@@ -4,9 +4,12 @@
 // and can revert them to regular windows.
 //
 // Usage:
-//   chrome_fullscreen_windows                 list fullscreen window IDs
-//   chrome_fullscreen_windows --restore <id>  un-fullscreen that window
-//   chrome_fullscreen_windows --restore-all   un-fullscreen every fullscreen window
+//   chrome_fullscreen_windows                 un-fullscreen every fullscreen window
+//   chrome_fullscreen_windows --restore-all   same, explicitly
+//   chrome_fullscreen_windows --restore <id>  un-fullscreen one window
+//   chrome_fullscreen_windows --list          just list fullscreen window IDs
+//
+// Exits 1 immediately if Accessibility permission is missing.
 //
 // Why the naive version fails: kAXWindowsAttribute only returns windows on the
 // *current* Space, and a fullscreen window always lives on its own Space — so
@@ -123,9 +126,8 @@ func exitFullscreen(_ window: AXUIElement, wid: CGWindowID) -> Bool {
 
 // MARK: main
 
-guard AXIsProcessTrustedWithOptions(
-    [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary) else {
-    fputs("Accessibility permission not granted — grant it in System Settings and re-run.\n", stderr)
+guard AXIsProcessTrusted() else {
+    fputs("No Accessibility permission (System Settings → Privacy & Security → Accessibility) — exiting.\n", stderr)
     exit(1)
 }
 
@@ -151,7 +153,7 @@ case "--restore":
     }
     exit(exitFullscreen(window, wid: wid) ? 0 : 1)
 
-case "--restore-all":
+case nil, "--restore-all":
     var failures = 0
     for (wid, window) in windows.sorted(by: { $0.key < $1.key }) where isFullscreen(window) {
         let title: String = attribute(window, kAXTitleAttribute as String) ?? "<untitled>"
@@ -160,7 +162,7 @@ case "--restore-all":
     }
     exit(failures == 0 ? 0 : 1)
 
-case nil:
+case "--list":
     var fullscreenIDs: [CGWindowID] = []
     for (wid, window) in windows.sorted(by: { $0.key < $1.key }) where isFullscreen(window) {
         fullscreenIDs.append(wid)
@@ -170,6 +172,6 @@ case nil:
     print(fullscreenIDs)
 
 default:
-    fputs("usage: chrome_fullscreen_windows [--restore <window-id> | --restore-all]\n", stderr)
+    fputs("usage: chrome_fullscreen_windows [--list | --restore <window-id> | --restore-all]\n", stderr)
     exit(2)
 }
