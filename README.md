@@ -1,3 +1,4 @@
+A hacky fix to how Screen Time will change some/all Chrome windows to be in Fullscreen mode when the screen time timers trigger. This will un-fullscreen all Chrome windows.
 
 build:
 
